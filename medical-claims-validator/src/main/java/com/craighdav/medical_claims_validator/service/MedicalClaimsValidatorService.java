@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.craighdav.medical_claims_validator.model.Charge;
 import com.craighdav.medical_claims_validator.model.Claim;
+import com.craighdav.medical_claims_validator.model.InvalidClaim;
 import com.craighdav.medical_claims_validator.model.Patient;
 import com.craighdav.medical_claims_validator.model.ProcessedMedicalClaimsData;
 import com.craighdav.medical_claims_validator.model.RawMedicalClaimsData;
@@ -30,7 +32,8 @@ public class MedicalClaimsValidatorService {
 		this.clock = clock;
 	}
 
-	public ProcessedMedicalClaimsData validateMedicalClaims(RawMedicalClaimsData rawMedicalClaimsData) {
+	public ProcessedMedicalClaimsData validateMedicalClaims(
+													RawMedicalClaimsData rawMedicalClaimsData) {
 
 		/*
 		 * Do NOT include claim if: 1. procedureCode begins with "9" AND placeOfService
@@ -50,27 +53,43 @@ public class MedicalClaimsValidatorService {
 				.collect(Collectors.toMap(Patient::getId, Function.identity()));
 
 		// Populate a map to retrieve a claim's place of service and patient ID
-		Map<Long, Claim> claimMap = claimList.stream().collect(Collectors.toMap(Claim::getId, Function.identity()));
+		Map<Long, Claim> claimMap = claimList.stream()
+						.collect(Collectors.toMap(Claim::getId, Function.identity()));
 
-		Set<Long> invalidClaimIdSet = chargeList.stream()
-				.filter(charge -> excludeClaimByCharge(charge, claimMap, patientMap)).map(charge -> charge.getClaimId())
+		/*
+		 * Set<Long> invalidClaimIdSet = chargeList.stream() .filter(charge ->
+		 * excludeClaimByCharge(charge, claimMap, patientMap)) .map(charge ->
+		 * charge.getClaimId()) .collect(Collectors.toSet());
+		 */
+		
+		Set<InvalidClaim> invalidClaimSet = chargeList.stream()
+				.map(charge -> invalidateClaimByCharge(charge, claimMap, patientMap))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
-		Set<Long> invalidClaimIdSetByDuplicates = excludeClaimsByDuplicates(chargeList);
+		Set<InvalidClaim> invalidClaimSetByDuplicates = excludeClaimsByDuplicates(chargeList);
+		
+		invalidClaimSet.addAll(invalidClaimSetByDuplicates);
+		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+				= invalidClaimSet.stream()
+					.collect(Collectors.groupingBy(InvalidClaim::getClaimId, 
+								Collectors.mapping(InvalidClaim::getIssue, Collectors.toList())));
 
-		invalidClaimIdSet.addAll(invalidClaimIdSetByDuplicates);
-
+		
+		Set<Long> invalidClaimIdSet = invalidClaimWithIssuesMap.keySet();
 		Set<Long> validClaimIdSet = claimList.stream().map(claim -> claim.getId())
 				.filter(claimId -> !(invalidClaimIdSet.contains(claimId))).collect(Collectors.toSet());
 
 		ProcessedMedicalClaimsData processedMedicalClaimsData = new ProcessedMedicalClaimsData(
-				Collections.unmodifiableSet(validClaimIdSet), Collections.unmodifiableSet(invalidClaimIdSet));
+				Collections.unmodifiableSet(validClaimIdSet), 
+				Collections.unmodifiableMap(invalidClaimWithIssuesMap));
 
 		return processedMedicalClaimsData;
 	}
 
 	/*
-	 * Exclude charges where the data is invalid, based on business rules:
+	 * Invalidate claim associated with charge based on the following business rules:
 	 * 
 	 * 1. procedureCode begins with "9" AND placeOfService != "office" 
 	 * 2. procedureCode begins with "6" AND placeOfService == "office" 
@@ -78,13 +97,16 @@ public class MedicalClaimsValidatorService {
 	 * 4. procedureCode == "99396" AND (patientAge < 18 OR patientAge > 39)
 	 * 
 	 */
-	private boolean excludeClaimByCharge(Charge charge, Map<Long, Claim> claimMap, Map<Long, Patient> patientMap) {
+	private InvalidClaim invalidateClaimByCharge(Charge charge, Map<Long, Claim> claimMap, Map<Long, Patient> patientMap) {
 
+		long chargeId = charge.getId();
 		long procedureCode = charge.getProcedureCode();
-		Claim claim = claimMap.get(charge.getClaimId());
-		/**** Maybe replace null check with Optional ***/
+		long claimId = charge.getClaimId();
+		
+		Claim claim = claimMap.get(claimId);
 		if (claim == null) {
-			return true;
+			return new InvalidClaim(claimId, "No matching claim found with claimId: " + claimId
+									+ " for charge: " + chargeId);
 		}
 
 		String placeOfService = claim.getPlaceOfService();
@@ -92,20 +114,22 @@ public class MedicalClaimsValidatorService {
 
 		if (procedureLeftmostDigit == 9) {
 			if (!placeOfService.equals("office")) {
-				return true;
+				return new InvalidClaim(claimId, "Charge: " + chargeId 
+											+ " has procedure code starting with 9 for NOT 'office'");
 			}
 		}
 
 		if (procedureLeftmostDigit == 6) {
 			if (placeOfService.equals("office")) {
-				return true;
+				return new InvalidClaim(claimId, "Charge: " + chargeId 
+						+ " has procedure code starting with 6 for 'office'");
 			}
 		}
 
 		Patient patient = patientMap.get(claim.getPatientId());
-		/**** Maybe replace null check with Optional ***/
+		
 		if (patient == null) {
-			return true;
+			return new InvalidClaim(claimId, "No matching patient found for claim: " + claimId);
 		}
 
 		LocalDate patientBirthDate = patient.getBirthDate();
@@ -114,23 +138,25 @@ public class MedicalClaimsValidatorService {
 
 		if (procedureCode == 99129L) {
 			if (patientAge >= 18) {
-				return true;
+				return new InvalidClaim(claimId, "Charge: " + chargeId 
+						+ " has procedure code 99129 with patientAge: " + patientAge);
 			}
 		}
 
 		if (procedureCode == 99396L) {
 			if ((patientAge < 18) || (patientAge > 39)) {
-				return true;
+				return new InvalidClaim(claimId, "Charge: " + chargeId 
+						+ " has procedure code 99396 with patientAge: " + patientAge);
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/*
 	 * Exclude a claim when it contains duplicate charges for any procedure code
 	 */
-	Set<Long> excludeClaimsByDuplicates(List<Charge> chargeList) {
+	private Set<InvalidClaim> excludeClaimsByDuplicates(List<Charge> chargeList) {
 		
 		Map<Long, Map<Long, Long>> chargeByClaimByProcedureMap = chargeList.stream()
 				.collect(Collectors.groupingBy(Charge::getClaimId,
@@ -139,7 +165,7 @@ public class MedicalClaimsValidatorService {
 		Set<Map.Entry<Long, Map<Long, Long>>> chargeByClaimByProcedureEntrySet 
 												= chargeByClaimByProcedureMap.entrySet();
 
-		Set<Long> invalidClaimIdSet =  chargeByClaimByProcedureEntrySet.stream()
+		Set<InvalidClaim> invalidClaimSet =  chargeByClaimByProcedureEntrySet.stream()
 			.filter(chargeByClaimByProcedureEntry -> {
 				Map<Long, Long> chargeByProcedureMap = chargeByClaimByProcedureEntry.getValue();
 				
@@ -148,10 +174,12 @@ public class MedicalClaimsValidatorService {
 				return chargeByProcedureValues.stream()
 						.anyMatch(chargeByProcedureValue -> chargeByProcedureValue > 1);
 			})
-			.map(chargeByClaimByProcedureEntry -> chargeByClaimByProcedureEntry.getKey())
+			.map(chargeByClaimByProcedureEntry -> 
+					new InvalidClaim(chargeByClaimByProcedureEntry.getKey(), 
+										"Claim has duplicate charges for at least one procedure"))
 			.collect(Collectors.toSet());
 		
-		return invalidClaimIdSet;
+		return invalidClaimSet;
 	}
 
 }

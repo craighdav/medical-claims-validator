@@ -7,8 +7,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -66,20 +68,21 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L, 5002L);
 		
 		// Claim 5002 has procedure code = "6XXXX" and place of service = "office", which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of();
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = Map.of();
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 		
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	
@@ -110,20 +113,23 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L);
 		
 		// Claim 5002 has procedure code = "6XXXX" and place of service = "office", which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5002L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
+				"Charge: 22003 has procedure code starting with 6 for 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}		
 		
 	
@@ -153,20 +159,23 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L);
 		
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5002L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
+				"Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}
 	
 	@Test
@@ -196,20 +205,23 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 		
 		// Claim 5000 has procedure code = 99129 and patient age > 18, which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
+				"Charge: 22000 has procedure code 99129 with patientAge: 65"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	@Test
@@ -239,20 +251,23 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
 		// Claim 5000 has procedure code = 99396 and patient age < 18, which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
+				"Charge: 22000 has procedure code 99396 with patientAge: 15"));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-				
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	
@@ -283,20 +298,23 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
 		// Claim 5000 has procedure code = 99396 and patient age > 39, which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
+				"Charge: 22000 has procedure code 99396 with patientAge: 65"));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-				
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	
@@ -330,19 +348,25 @@ public class MedicalClaimsValidatorServiceTest {
 		// Claim 5000 has procedure code = "99396" and patient age is 15, which is invalid
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
 		Set<Long> invalidClaimIdSetExpected = Set.of(5000L, 5002L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
+				"Charge: 22000 has procedure code 99396 with patientAge: 15"));
+		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
+				"Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 		
 	}
 		
@@ -380,18 +404,22 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Duplicate charges for claim 5003 / procedure code 99396, which is invalid 
 		Set<Long> invalidClaimIdSetExpected = Set.of(5003L);
+		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
+		invalidClaimWithIssuesMapExpected.put(5003L, List.of(
+				"Claim has duplicate charges for at least one procedure"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
-		
+		Map<Long, List<String>> invalidClaimWithIssuesMap 
+						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
 		// Assert
 		assertEquals(validClaimIdSetExpected, validClaimIdSet,
-						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
-						"Expected set of invalid Claim Ids does not match returned set.");
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
 	}
 }

@@ -1,17 +1,20 @@
 package com.craighdav.medical_claims_validator.model;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProcessedMedicalClaimsData {
 	private final Set<Long> validClaimIdSet;
-	private final Set<Long> invalidClaimIdSet;
+	private final Map<Long, List<String>> invalidClaimWithIssuesMap;
 	
-	public ProcessedMedicalClaimsData(Set<Long> validClaimIdSet, Set<Long> invalidClaimIdSet) {
+	public ProcessedMedicalClaimsData(Set<Long> validClaimIdSet, 
+										Map<Long, List<String>> invalidClaimWithIssuesMap ) {
 		this.validClaimIdSet = validClaimIdSet;
-		this.invalidClaimIdSet = invalidClaimIdSet;
+		this.invalidClaimWithIssuesMap = invalidClaimWithIssuesMap;
 	}
 	
 	@JsonProperty("validClaimIds")
@@ -20,7 +23,7 @@ public class ProcessedMedicalClaimsData {
 	}
 	
 	@JsonProperty("invalidClaimIds")
-	public Set<Long> getInvalidClaimIdSet() {
-		return Collections.unmodifiableSet(invalidClaimIdSet);
+	public Map<Long, List<String>> getInvalidClaimWithIssuesMap() {
+		return Collections.unmodifiableMap(invalidClaimWithIssuesMap);
 	}
 }
