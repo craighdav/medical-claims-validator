@@ -76,9 +76,9 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
@@ -120,9 +120,9 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
 	}		
 		
@@ -163,11 +163,10 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
-		
 	}
 	
 	@Test
@@ -207,9 +206,9 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
@@ -218,42 +217,42 @@ public class MedicalClaimsValidatorServiceTest {
 	public void validateMedicalClaims_ProcedureCode99396WithAgeUnder18_Invalid() {
 		
 		// Arrange
-				List<Patient> patientList = new ArrayList<>();
-				patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(2010, 2, 10)));
-				patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
+		List<Patient> patientList = new ArrayList<>();
+		patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(2010, 2, 10)));
+		patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
 				
-				List<Claim> claimList = new ArrayList<>();
-				claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "office"));
-				claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
-				claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "office"));
+		List<Claim> claimList = new ArrayList<>();
+		claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "office"));
+		claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
+		claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "office"));
 				
-				List<Charge> chargeList = new ArrayList<>();
-				chargeList.add(new Charge(22000L, 5000L, 99396L, 470));
-				chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
-				chargeList.add(new Charge(22002L, 5002L, 50035L, 362));
-				chargeList.add(new Charge(22003L, 5002L, 73209L, 587));
+		List<Charge> chargeList = new ArrayList<>();
+		chargeList.add(new Charge(22000L, 5000L, 99396L, 470));
+		chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
+		chargeList.add(new Charge(22002L, 5002L, 50035L, 362));
+		chargeList.add(new Charge(22003L, 5002L, 73209L, 587));
 				
 				
-				RawMedicalClaimsData rawMedicalClaimsData 
+		RawMedicalClaimsData rawMedicalClaimsData 
 							= new RawMedicalClaimsData(patientList, claimList, chargeList);
 				
-				Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
+		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
-				// Claim 5000 has procedure code = 99396 and patient age < 18, which is invalid
-				Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
+		// Claim 5000 has procedure code = 99396 and patient age < 18, which is invalid
+		Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
 				
-				// Act
-				ProcessedMedicalClaimsData processedMedicalClaimsData 
+		// Act
+		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
-				Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-				Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
+		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
+		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 				
-				// Assert
-				assertEquals(validClaimIdSet, validClaimIdSetExpected,
-								"Expected set of valid Claim Ids does not match returned set.");
-				assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
-								"Expected set of invalid Claim Ids does not match returned set.");
+		// Assert
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
+						"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
+						"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	
@@ -262,42 +261,42 @@ public class MedicalClaimsValidatorServiceTest {
 	public void validateMedicalClaims_ProcedureCode99396WithAgeOver39_Invalid() {
 		
 		// Arrange
-				List<Patient> patientList = new ArrayList<>();
-				patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(1960, 2, 10)));
-				patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
+		List<Patient> patientList = new ArrayList<>();
+		patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(1960, 2, 10)));
+		patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
 				
-				List<Claim> claimList = new ArrayList<>();
-				claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "office"));
-				claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
-				claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "office"));
+		List<Claim> claimList = new ArrayList<>();
+		claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "office"));
+		claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
+		claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "office"));
 				
-				List<Charge> chargeList = new ArrayList<>();
-				chargeList.add(new Charge(22000L, 5000L, 99396L, 470));
-				chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
-				chargeList.add(new Charge(22002L, 5002L, 50035L, 362));
-				chargeList.add(new Charge(22003L, 5002L, 73209L, 587));
+		List<Charge> chargeList = new ArrayList<>();
+		chargeList.add(new Charge(22000L, 5000L, 99396L, 470));
+		chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
+		chargeList.add(new Charge(22002L, 5002L, 50035L, 362));
+		chargeList.add(new Charge(22003L, 5002L, 73209L, 587));
 				
 				
-				RawMedicalClaimsData rawMedicalClaimsData 
+		RawMedicalClaimsData rawMedicalClaimsData 
 							= new RawMedicalClaimsData(patientList, claimList, chargeList);
 				
-				Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
+		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
-				// Claim 5000 has procedure code = 99396 and patient age > 39, which is invalid
-				Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
+		// Claim 5000 has procedure code = 99396 and patient age > 39, which is invalid
+		Set<Long> invalidClaimIdSetExpected = Set.of(5000L);
 				
-				// Act
-				ProcessedMedicalClaimsData processedMedicalClaimsData 
+		// Act
+		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
-				Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-				Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
+		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
+		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 				
-				// Assert
-				assertEquals(validClaimIdSet, validClaimIdSetExpected,
-								"Expected set of valid Claim Ids does not match returned set.");
-				assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
-								"Expected set of invalid Claim Ids does not match returned set.");
+		// Assert
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
+						"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
+						"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
 	
@@ -340,9 +339,9 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
 		
 	}
@@ -390,9 +389,9 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> invalidClaimIdSet = processedMedicalClaimsData.getInvalidClaimIdSet();
 		
 		// Assert
-		assertEquals(validClaimIdSet, validClaimIdSetExpected,
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
 						"Expected set of valid Claim Ids does not match returned set.");
-		assertEquals(invalidClaimIdSet, invalidClaimIdSetExpected,
+		assertEquals(invalidClaimIdSetExpected, invalidClaimIdSet,
 						"Expected set of invalid Claim Ids does not match returned set.");
 	}
 }
