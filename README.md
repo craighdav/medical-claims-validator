@@ -16,9 +16,12 @@ A Spring Boot RESTful API for validating medical claims based on a set of predef
 * [Contact](#contact)
 
 ## About The Project
-This project implements a backend service to validate incoming medical claims data against a series of complex business rules. It's designed to process a batch of patients, claims, and charges, and return a structured response indicating which claims are valid and which are invalid, along with the specific issues for each invalid claim.
 
-The application leverages Spring Boot for rapid development of RESTful APIs and utilizes Jakarta Bean Validation for basic data integrity checks on the incoming JSON payload. The core validation logic is encapsulated to ensure maintainability and testability, with supporting utility classes like MathUtils providing foundational computations.
+This project addresses the challenge of validating complex medical claims data, which arrives as three independent, inter-related lists: patients, claims, and charges. My solution focuses on **efficient data processing and robust algorithmic logic** to manage these interdependencies and produce a comprehensive validation report.
+
+Key to the design is the strategic use of **in-memory data structures**, such as `Map` and `Set`, to create highly efficient lookup mechanisms. These structures facilitate rapid association of claims with patients, and charges with claims, as well as the quick identification of issues. The core validation logic within `MedicalClaimsValidatorService` demonstrates a keen understanding of **problem decomposition**, adopting a **process-of-elimination approach** by identifying invalid claims first. This recognition simplifies the overall validation flow, as a single invalid charge invalidates an entire claim. Furthermore, the robust detection of duplicate charges for a claim involved designing a sophisticated data transformation using **nested Stream API grouping**, creating a structured `Map` that efficiently tracks `procedureCode` occurrences per `claimId`. Developing such a design required significant logical reasoning. Despite the intricate nature of the validation rules, the solution within `MedicalClaimsValidatorService` is remarkably **concise and straightforward**, leveraging **Java's Stream API** for elegant data transformations and aggregations. The overall algorithmic approach, combined with other necessary calculations, ensures all business requirements are met.
+
+The application leverages Spring Boot for building a scalable RESTful API and utilizes Jakarta Bean Validation for initial input data integrity. The entire validation process is encapsulated, emphasizing maintainability, testability, and **clear separation of concerns**, ultimately delivering a structured response that clearly distinguishes valid claims from invalid ones, complete with detailed reasons for rejection.
 
 ## Features
 RESTful API: Exposes an endpoint to receive and process medical claims data.
