@@ -71,10 +71,10 @@ public class MedicalClaimsValidatorService {
 		
 		invalidClaimSet.addAll(invalidClaimSetByDuplicates);
 		
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 				= invalidClaimSet.stream()
 					.collect(Collectors.groupingBy(InvalidClaim::getClaimId, 
-								Collectors.mapping(InvalidClaim::getIssue, Collectors.toList())));
+								Collectors.mapping(InvalidClaim::getIssue, Collectors.toSet())));
 
 		
 		Set<Long> invalidClaimIdSet = invalidClaimWithIssuesMap.keySet();

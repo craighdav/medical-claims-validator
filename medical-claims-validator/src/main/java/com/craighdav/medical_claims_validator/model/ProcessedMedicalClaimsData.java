@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProcessedMedicalClaimsData {
 	private final Set<Long> validClaimIdSet;
-	private final Map<Long, List<String>> invalidClaimWithIssuesMap;
+	private final Map<Long, Set<String>> invalidClaimWithIssuesMap;
 	
 	public ProcessedMedicalClaimsData(Set<Long> validClaimIdSet, 
-										Map<Long, List<String>> invalidClaimWithIssuesMap ) {
+										Map<Long, Set<String>> invalidClaimWithIssuesMap ) {
 		this.validClaimIdSet = validClaimIdSet;
 		this.invalidClaimWithIssuesMap = invalidClaimWithIssuesMap;
 	}
@@ -23,7 +23,7 @@ public class ProcessedMedicalClaimsData {
 	}
 	
 	@JsonProperty("invalidClaimIds")
-	public Map<Long, List<String>> getInvalidClaimWithIssuesMap() {
+	public Map<Long, Set<String>> getInvalidClaimWithIssuesMap() {
 		return Collections.unmodifiableMap(invalidClaimWithIssuesMap);
 	}
 }

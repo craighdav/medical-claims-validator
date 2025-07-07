@@ -68,14 +68,14 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L, 5002L);
 		
 		// Claim 5002 has procedure code = "6XXXX" and place of service = "office", which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = Map.of();
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of();
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 		
 		// Assert
@@ -113,16 +113,15 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L);
 		
 		// Claim 5002 has procedure code = "6XXXX" and place of service = "office", which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
-				"Charge: 22003 has procedure code starting with 6 for 'office'"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
+						Set.of("Charge: 22003 has procedure code starting with 6 for 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -159,16 +158,15 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L);
 		
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
-				"Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
+					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -205,16 +203,15 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 		
 		// Claim 5000 has procedure code = 99129 and patient age > 18, which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
-				"Charge: 22000 has procedure code 99129 with patientAge: 65"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
+					Set.of("Charge: 22000 has procedure code 99129 with patientAge: 65"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -251,16 +248,15 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
 		// Claim 5000 has procedure code = 99396 and patient age < 18, which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
-				"Charge: 22000 has procedure code 99396 with patientAge: 15"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15"));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -298,16 +294,15 @@ public class MedicalClaimsValidatorServiceTest {
 		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
 				
 		// Claim 5000 has procedure code = 99396 and patient age > 39, which is invalid
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
-				"Charge: 22000 has procedure code 99396 with patientAge: 65"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 65"));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 							= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 				
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -319,8 +314,60 @@ public class MedicalClaimsValidatorServiceTest {
 	
 	
 	@Test
+	@DisplayName("Should independently invalidate charges on same claim")
+	public void validateMedicalClaims_MultiInvalidChargesPerClaim_Invalid() {
+		
+		// Arrange
+		List<Patient> patientList = new ArrayList<>();
+		patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(2000, 2, 10)));
+		patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
+		
+		List<Claim> claimList = new ArrayList<>();
+		claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "office"));
+		claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
+		claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "home"));
+		claimList.add(new Claim(5003L, 1102L, LocalDate.of(2025, 5, 29), "office"));
+		
+		List<Charge> chargeList = new ArrayList<>();
+		chargeList.add(new Charge(22000L, 5000L, 99396L, 470));
+		chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
+		chargeList.add(new Charge(22002L, 5002L, 92345L, 216));
+		chargeList.add(new Charge(22003L, 5002L, 92345L, 287));
+		chargeList.add(new Charge(22004L, 5003L, 99396L, 940));
+		
+		RawMedicalClaimsData rawMedicalClaimsData 
+					= new RawMedicalClaimsData(patientList, claimList, chargeList);
+
+		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L, 5003L);
+		
+		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
+		// Duplicate charges for claim 5002 / procedure code 92345, which is invalid 
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
+					Set.of(
+							"Charge: 22002 has procedure code starting with 9 for NOT 'office'",
+							"Charge: 22003 has procedure code starting with 9 for NOT 'office'",
+							"Claim has duplicate charges for at least one procedure"));
+		
+		
+		// Act
+		ProcessedMedicalClaimsData processedMedicalClaimsData 
+					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
+		
+		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
+						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
+		// Assert
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
+		
+	}
+	
+	@Test
 	@DisplayName("Should independently categorize each bad claim as invalid")
-	public void validateMedicalClaims_MultiInvalidInputs_Invalid() {
+	public void validateMedicalClaims_MultiInvalidClaims_Invalid() {
 		
 		// Arrange
 		List<Patient> patientList = new ArrayList<>();
@@ -347,19 +394,17 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Claim 5000 has procedure code = "99396" and patient age is 15, which is invalid
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
-		Set<Long> invalidClaimIdSetExpected = Set.of(5000L, 5002L);
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5000L, List.of(
-				"Charge: 22000 has procedure code 99396 with patientAge: 15"));
-		invalidClaimWithIssuesMapExpected.put(5002L, List.of(
-				"Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15"),
+					5002L, 
+					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
@@ -369,6 +414,7 @@ public class MedicalClaimsValidatorServiceTest {
 							"Expected set of invalid Claim Ids does not match returned set.");
 		
 	}
+	
 		
 	// Test for duplicate procedure codes under a claim
 	// (claim 104 has procedure code "99396" for two charges, which is invalid)
@@ -402,18 +448,16 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		Set<Long> validClaimIdSetExpected = Set.of(5000L, 5001L, 5002L);
 		
-		// Duplicate charges for claim 5003 / procedure code 99396, which is invalid 
-		Set<Long> invalidClaimIdSetExpected = Set.of(5003L);
-		Map<Long, List<String>> invalidClaimWithIssuesMapExpected = new HashMap<>();
-		invalidClaimWithIssuesMapExpected.put(5003L, List.of(
-				"Claim has duplicate charges for at least one procedure"));
+		// Duplicate charges for claim 5003 / procedure code 99396, which is invalid
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5003L, 
+					Set.of("Claim has duplicate charges for at least one procedure"));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
 					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
 		
 		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
-		Map<Long, List<String>> invalidClaimWithIssuesMap 
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
 						= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
 
 		// Assert
