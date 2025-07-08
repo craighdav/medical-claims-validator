@@ -131,19 +131,19 @@ curl -X POST -H "Content-Type: application/json" -d '{"patients":[{"id":101,"fir
   "validClaimIds": [],
   "invalidClaimIds": {
     "1": [
-      "Charge: 1002 has procedure code 99129 with patientAge: 45"
+      "Charge: 1002 has procedure code 99129 with patientAge: 45."
     ],
     "2": [
-      "Charge: 1003 has procedure code starting with 9 for NOT 'office'"
+      "Charge: 1003 has procedure code starting with 9 for NOT 'office'."
     ],
     "3": [
-      "Charge: 1004 has procedure code starting with 6 for 'office'"
+      "Charge: 1004 has procedure code starting with 6 for 'office'."
     ],
     "4": [
-      "Charge: 1005 has procedure code 99396 with patientAge: 55"
+      "Charge: 1005 has procedure code 99396 with patientAge: 55."
     ],
     "5": [
-      "Claim has duplicate charges for at least one procedure"
+      "Claim has duplicate charges for at least one procedure."
     ]
   }
 }
