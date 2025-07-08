@@ -113,40 +113,56 @@ public class MedicalClaimsValidatorService {
 		int procedureLeftmostDigit = MathUtils.getLeftmostDigit(procedureCode);
 
 		if (procedureLeftmostDigit == 9) {
+			String claimIssue = "";
+			boolean isValid = true;
+			
 			if (!placeOfService.equals("office")) {
-				return new InvalidClaim(claimId, "Charge: " + chargeId 
-											+ " has procedure code starting with 9 for NOT 'office'");
+				claimIssue = "Charge: " + chargeId 
+								+ " has procedure code starting with 9 for NOT 'office'. ";
+				isValid = false;
+			}
+			
+			Patient patient = patientMap.get(claim.getPatientId());
+			
+			// If no patient is found matching the claim, return InvalidClaim immediately
+			// since no more processing can be done in this logic branch.
+			// NOTE: This validation check is only performed on when the claim matches
+			// a charge with procedureCode beginning with 9 since the patient age
+			// is needed only to validate specific procedureCodes beginning with 9.
+			if (patient == null) {
+				claimIssue += "No matching patient found for claim: " + claimId + ". ";
+				return new InvalidClaim(claimId, claimIssue.trim());
+			}
+			
+			LocalDate patientBirthDate = patient.getBirthDate();
+			LocalDate today = LocalDate.now(clock);
+			int patientAge = patientBirthDate.until(today).getYears();
+
+			if (procedureCode == 99129L) {
+				if (patientAge >= 18) {
+					claimIssue += "Charge: " + chargeId 
+								+ " has procedure code 99129 with patientAge: " + patientAge + ". ";
+					isValid = false;
+				}
+			}
+
+			if (procedureCode == 99396L) {
+				if ((patientAge < 18) || (patientAge > 39)) {
+					claimIssue += "Charge: " + chargeId 
+							+ " has procedure code 99396 with patientAge: " + patientAge + ". ";
+					isValid = false;
+				}
+			}
+			
+			if (!isValid) {
+				return new InvalidClaim(claimId, claimIssue.trim());
 			}
 		}
 
 		if (procedureLeftmostDigit == 6) {
 			if (placeOfService.equals("office")) {
 				return new InvalidClaim(claimId, "Charge: " + chargeId 
-						+ " has procedure code starting with 6 for 'office'");
-			}
-		}
-
-		Patient patient = patientMap.get(claim.getPatientId());
-		
-		if (patient == null) {
-			return new InvalidClaim(claimId, "No matching patient found for claim: " + claimId);
-		}
-
-		LocalDate patientBirthDate = patient.getBirthDate();
-		LocalDate today = LocalDate.now(clock);
-		int patientAge = patientBirthDate.until(today).getYears();
-
-		if (procedureCode == 99129L) {
-			if (patientAge >= 18) {
-				return new InvalidClaim(claimId, "Charge: " + chargeId 
-						+ " has procedure code 99129 with patientAge: " + patientAge);
-			}
-		}
-
-		if (procedureCode == 99396L) {
-			if ((patientAge < 18) || (patientAge > 39)) {
-				return new InvalidClaim(claimId, "Charge: " + chargeId 
-						+ " has procedure code 99396 with patientAge: " + patientAge);
+						+ " has procedure code starting with 6 for 'office'.");
 			}
 		}
 
@@ -176,7 +192,7 @@ public class MedicalClaimsValidatorService {
 			})
 			.map(chargeByClaimByProcedureEntry -> 
 					new InvalidClaim(chargeByClaimByProcedureEntry.getKey(), 
-										"Claim has duplicate charges for at least one procedure"))
+										"Claim has duplicate charges for at least one procedure."))
 			.collect(Collectors.toSet());
 		
 		return invalidClaimSet;

@@ -42,7 +42,7 @@ public class MedicalClaimsValidatorServiceTest {
 		
 	
 	@Test
-	@DisplayName("All claims with only valid data should be returned as valid")
+	@DisplayName("All claims with only valid data should return valid")
 	public void validateMedicalClaims_AllGood_Valid() {
 		
 		// Arrange
@@ -87,7 +87,7 @@ public class MedicalClaimsValidatorServiceTest {
 	
 	
 	@Test
-	@DisplayName("Claim with procedure code 6XXXX and 'office' should be returned as invalid")
+	@DisplayName("Claim with procedure code 6XXXX and 'office' should return invalid")
 	public void validateMedicalClaims_ProcedureCode6WithOffice_Invalid() {
 		
 		// Arrange
@@ -114,7 +114,7 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Claim 5002 has procedure code = "6XXXX" and place of service = "office", which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
-						Set.of("Charge: 22003 has procedure code starting with 6 for 'office'"));
+						Set.of("Charge: 22003 has procedure code starting with 6 for 'office'."));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -133,8 +133,8 @@ public class MedicalClaimsValidatorServiceTest {
 		
 	
 	@Test
-	@DisplayName("Claim with procedure code 9XXXX and 'home' should be returned as invalid")
-	public void validateMedicalClaims_ProcedureCode9WithHome_Invalid() {
+	@DisplayName("Claim with procedure code 9XXXX and NOT 'office' should return invalid")
+	public void validateMedicalClaims_ProcedureCode9WithNotOffice_Invalid() {
 		
 		// Arrange
 		List<Patient> patientList = new ArrayList<>();
@@ -159,7 +159,7 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
-					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
+					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'."));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -177,7 +177,7 @@ public class MedicalClaimsValidatorServiceTest {
 	}
 	
 	@Test
-	@DisplayName("Claim with procedure code 99129 and patient age > 18 should be returned as invalid")
+	@DisplayName("Claim with procedure code 99129 and patient age > 18 should return invalid")
 	public void validateMedicalClaims_ProcedureCode99129WithAgeOver18_Invalid() {
 		
 		// Arrange
@@ -204,7 +204,53 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Claim 5000 has procedure code = 99129 and patient age > 18, which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
-					Set.of("Charge: 22000 has procedure code 99129 with patientAge: 65"));
+					Set.of("Charge: 22000 has procedure code 99129 with patientAge: 65."));
+		
+		// Act
+		ProcessedMedicalClaimsData processedMedicalClaimsData 
+					= medicalClaimsValidatorService.validateMedicalClaims(rawMedicalClaimsData);
+		
+		Set<Long> validClaimIdSet = processedMedicalClaimsData.getValidClaimIdSet();
+		Map<Long, Set<String>> invalidClaimWithIssuesMap 
+							= processedMedicalClaimsData.getInvalidClaimWithIssuesMap();
+
+		// Assert
+		assertEquals(validClaimIdSetExpected, validClaimIdSet,
+							"Expected set of valid Claim Ids does not match returned set.");
+		assertEquals(invalidClaimWithIssuesMapExpected, invalidClaimWithIssuesMap,
+							"Expected set of invalid Claim Ids does not match returned set.");
+	}
+	
+	@Test
+	@DisplayName("Procedure code 99129 and patient age > 18 and NOT office should return invalid")
+	public void validateMedicalClaims_ProcedureCode99129NotOfficeWithAgeOver18_Invalid() {
+		
+		// Arrange
+		List<Patient> patientList = new ArrayList<>();
+		patientList.add(new Patient(1101L, "Bill", "Smith", LocalDate.of(1960, 2, 10)));
+		patientList.add(new Patient(1102L, "Deepak", "Gupta", LocalDate.of(1989, 9, 24)));
+		
+		List<Claim> claimList = new ArrayList<>();
+		claimList.add(new Claim(5000L, 1101L, LocalDate.of(2025, 5, 16), "home"));
+		claimList.add(new Claim(5001L, 1101L, LocalDate.of(2025, 6, 12), "office"));
+		claimList.add(new Claim(5002L, 1102L, LocalDate.of(2025, 5, 23), "office"));
+		
+		List<Charge> chargeList = new ArrayList<>();
+		chargeList.add(new Charge(22000L, 5000L, 99129L, 470));
+		chargeList.add(new Charge(22001L, 5001L, 80640L, 655));
+		chargeList.add(new Charge(22002L, 5002L, 50035L, 362));
+		chargeList.add(new Charge(22003L, 5002L, 73209L, 587));
+		
+		
+		RawMedicalClaimsData rawMedicalClaimsData 
+					= new RawMedicalClaimsData(patientList, claimList, chargeList);
+		
+		Set<Long> validClaimIdSetExpected = Set.of(5001L, 5002L);
+		
+		// Claim 5000 has procedure code = 99129 and patient age > 18, which is invalid
+		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
+					Set.of("Charge: 22000 has procedure code starting with 9 for NOT 'office'. "
+							+ "Charge: 22000 has procedure code 99129 with patientAge: 65."));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -221,8 +267,10 @@ public class MedicalClaimsValidatorServiceTest {
 							"Expected set of invalid Claim Ids does not match returned set.");
 	}	
 	
+	
+	
 	@Test
-	@DisplayName("Claim with procedure code 99396 and patient age < 18 should be returned as invalid")
+	@DisplayName("Claim with procedure code 99396 and patient age < 18 should return invalid")
 	public void validateMedicalClaims_ProcedureCode99396WithAgeUnder18_Invalid() {
 		
 		// Arrange
@@ -249,7 +297,7 @@ public class MedicalClaimsValidatorServiceTest {
 				
 		// Claim 5000 has procedure code = 99396 and patient age < 18, which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
-					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15"));
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15."));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -268,7 +316,7 @@ public class MedicalClaimsValidatorServiceTest {
 	
 	
 	@Test
-	@DisplayName("Claim with procedure code 99396 and patient age > 39 should be returned as invalid")
+	@DisplayName("Claim with procedure code 99396 and patient age > 39 should return invalid")
 	public void validateMedicalClaims_ProcedureCode99396WithAgeOver39_Invalid() {
 		
 		// Arrange
@@ -295,7 +343,7 @@ public class MedicalClaimsValidatorServiceTest {
 				
 		// Claim 5000 has procedure code = 99396 and patient age > 39, which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
-					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 65"));
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 65."));
 				
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -344,9 +392,9 @@ public class MedicalClaimsValidatorServiceTest {
 		// Duplicate charges for claim 5002 / procedure code 92345, which is invalid 
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5002L, 
 					Set.of(
-							"Charge: 22002 has procedure code starting with 9 for NOT 'office'",
-							"Charge: 22003 has procedure code starting with 9 for NOT 'office'",
-							"Claim has duplicate charges for at least one procedure"));
+							"Charge: 22002 has procedure code starting with 9 for NOT 'office'.",
+							"Charge: 22003 has procedure code starting with 9 for NOT 'office'.",
+							"Claim has duplicate charges for at least one procedure."));
 		
 		
 		// Act
@@ -395,9 +443,9 @@ public class MedicalClaimsValidatorServiceTest {
 		// Claim 5000 has procedure code = "99396" and patient age is 15, which is invalid
 		// Claim 5002 has procedure code = "9XXXX" and place of service = "home", which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5000L, 
-					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15"),
+					Set.of("Charge: 22000 has procedure code 99396 with patientAge: 15."),
 					5002L, 
-					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'"));
+					Set.of("Charge: 22003 has procedure code starting with 9 for NOT 'office'."));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
@@ -419,7 +467,7 @@ public class MedicalClaimsValidatorServiceTest {
 	// Test for duplicate procedure codes under a claim
 	// (claim 104 has procedure code "99396" for two charges, which is invalid)
 	@Test
-	@DisplayName("Claim with duplicate charges for a single procedure should be returned as invalid")
+	@DisplayName("Claim with duplicate charges for a single procedure should return invalid")
 	public void validateMedicalClaims_DuplicateChargesPerProcedure_Invalid() {
 		
 		// Arrange
@@ -450,7 +498,7 @@ public class MedicalClaimsValidatorServiceTest {
 		
 		// Duplicate charges for claim 5003 / procedure code 99396, which is invalid
 		Map<Long, Set<String>> invalidClaimWithIssuesMapExpected = Map.of(5003L, 
-					Set.of("Claim has duplicate charges for at least one procedure"));
+					Set.of("Claim has duplicate charges for at least one procedure."));
 		
 		// Act
 		ProcessedMedicalClaimsData processedMedicalClaimsData 
